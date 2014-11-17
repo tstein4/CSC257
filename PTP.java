@@ -3,7 +3,7 @@ import java.util.Random;
 import java.io.*;
 
 public class PTP{
-	final static int TTL = 2;
+	static int TTL = 2;
 
 	public static void main(String[] args) throws IOException{
 		if (args.length < 2){
@@ -77,6 +77,16 @@ public class PTP{
 				System.out.println("                  All nodes print their progress, and include TTL value, Query ID, and file prefix.");
 				System.out.println("                  Hits are reported both in the finding node and the initial node.");
 				System.out.print("\n$ ");
+			}
+			else if (userInput.indexOf("set ttl ") == 0){
+				String[] vals = userInput.split(" ");
+				try{
+					TTL = Integer.parseInt(vals[2]);
+				}
+				catch(NumberFormatException e){
+					System.out.println("Error: can't parse new ttl value.");
+					System.out.print("\n$ ");
+				}
 			}
 		}
 	}
