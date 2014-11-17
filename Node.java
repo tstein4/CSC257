@@ -8,19 +8,25 @@ public class Node{
 	int port;
 	ArrayList<String> neighborIPs;
 	int[] searchedFiles;
+	ServerThread sThread;
 
 	public Node(int port, String dir, ArrayList<String> neighborIPs){
 		this.port = port;
 		this.dir = dir;
 		searchedFiles = new int[10];
 		this.neighborIPs = neighborIPs;
+		for (String ip : neighborIPs){
+			sendToNeighbor(ip, "addneighbor|"+port);
+		}
 	}
 
 	public void startServer(){
-		System.out.println(dir);
-		for (String ip : neighborIPs){
-			System.out.println(ip);
-		}
+		sThread = new ServerThread(port);
+		sThread.start();
+	}
+
+	public void stopServer(){
+		sThread.terminate();
 	}
 
 	public void worker(){
@@ -29,6 +35,18 @@ public class Node{
 
 	public void startSeach(){
 
+	}
+
+	public void pingNeighbors(){
+		for (String ip : neighborIPs){
+			sendToNeighbor(ip, "ping");
+		}
+	}
+
+	public void printNeighbors(){
+		for (String ip : neighborIPs){
+			System.out.println(ip);
+		}
 	}
 
 	public void sendToNeighbor(String ip, String message){
@@ -41,8 +59,11 @@ public class Node{
 		){
 			out.println(message);
 		} catch(UnknownHostException e){
+			System.out.println("UnknownHostException");
 			System.exit(1);
 		} catch (IOException e){
+			System.out.println(ip);
+			e.printStackTrace();
 			System.exit(1);
 		}
 	}
@@ -80,7 +101,14 @@ public class Node{
 				System.out.println("Quitting.");
 				System.exit(0);
 			}
-			System.out.println(userInput);
+			else if (userInput.equals("print")){
+				node.printNeighbors();
+			}
+			else if (userInput.equals("ping")){
+				node.pingNeighbors();
+			}
+			else
+				System.out.println(userInput);
 		}
 	}
 
@@ -96,13 +124,52 @@ public class Node{
 				// PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			) {
+				// System.out.println("ip: " +socket.getInetAddress().toString().substring(1));
+				// System.out.println("port: " +socket.getPort());
 				String inputLine, outputLine;
 				while ((inputLine = in.readLine()) != null){
-					System.out.println(inputLine);
+					if (inputLine.indexOf("addneighbor") >= 0){
+						String port = inputLine.substring(inputLine.indexOf("|")+1);
+						if (!neighborIPs.contains(socket.getInetAddress().toString().substring(1)+":"+port)){
+							neighborIPs.add(socket.getInetAddress().toString().substring(1)+":"+port);
+						}
+					}
+					else if(inputLine.indexOf("ping") >= 0){
+						System.out.println("Got pinged by " + socket.getInetAddress().toString().substring(1));
+					}
+					// System.out.println(inputLine);
 				}
 			} catch (IOException e){
 				e.printStackTrace();
 			}
+		}
+	}
+
+	class ServerThread extends Thread{
+		private int portNumber;
+		private boolean running;
+
+		public ServerThread(int portNumber){
+			this.portNumber = portNumber;
+			running = true;
+		}
+
+		public void run(){
+			try(
+				ServerSocket serverSocket = new ServerSocket(portNumber);
+			){
+				while (running){
+					// System.out.println("pls");
+					new WorkerThread(serverSocket.accept()).start();
+				}
+			} catch(IOException e){
+				e.printStackTrace();
+				System.exit(1);
+			}
+		}
+
+		public void terminate(){
+			running = false;
 		}
 	}
 }
