@@ -8,9 +8,9 @@ import java.io.*;
 public class WebCrawler {
 
 	/*
-	Usage: ava WebCrawler <mode> <n> -url <urls...> -search <terms...>
+	Usage: java WebCrawler <mode> <limit> -url <urls...> -search <terms...> [-v]
 	mode = pages or bytes per second (b for bytes, p for pages)
-	n = mode per second (int)
+	limit = mode per second (int)
 	-url = start URLs
 	[url...] = starting urls
 	-search = start search terms
@@ -24,7 +24,7 @@ public class WebCrawler {
 		ArrayList<String> searchTerms = new ArrayList<String>();
 		boolean verbose = false;
 		if (args.length < 6){
-			System.out.println("Not enough command line arguments. Usage: java WebCrawler <mode> <n> -url <urls...> -search <terms...>");
+			System.out.println("Not enough command line arguments. Usage: java WebCrawler <mode> <limit> -url <urls...> -search <terms...>");
 			System.exit(1);
 		}
 		mode = args[0];
@@ -43,7 +43,7 @@ public class WebCrawler {
 			System.exit(1);
 		}
 		if (!args[2].equals("-url")){
-			System.out.println("Error: no URLs entered. Must preface URLs with '-url' flag\nUsage: java WebCrawler <mode> <n> -url <urls...> -search <terms...>");
+			System.out.println("Error: no URLs entered. Must preface URLs with '-url' flag\nUsage: java WebCrawler <mode> <limit> -url <urls...> -search <terms...>");
 			System.exit(1);
 		}
 
@@ -58,8 +58,12 @@ public class WebCrawler {
 			}
 			i++;
 		}
+		if (urls.size() == 0){
+			System.out.println("Error: no URLs entered. Must preface URLs with '-url' flag\nUsage: java WebCrawler <mode> <limit> -url <urls...> -search <terms...>");
+			System.exit(1);
+		}
 		if (i == args.length){
-			System.out.println("Error: No search terms. Must preface terms with '-search' flag\nUsage: java WebCrawler <mode> <n> -url <urls...> -search <terms...>");
+			System.out.println("Error: No search terms. Must preface terms with '-search' flag\nUsage: java WebCrawler <mode> <limit> -url <urls...> -search <terms...>");
 			System.exit(1);
 		}
 		i++;
@@ -67,7 +71,10 @@ public class WebCrawler {
 			searchTerms.add(args[i].toLowerCase());
 			i++;
 		}
-
+		if (searchTerms.size() == 0){
+			System.out.println("Error: No search terms. Must preface terms with '-search' flag\nUsage: java WebCrawler <mode> <limit> -url <urls...> -search <terms...>");
+			System.exit(1);
+		}
 		if (i != args.length && args[i].equals("-v")){
 			verbose = true;
 		}
@@ -77,7 +84,6 @@ public class WebCrawler {
 
 		BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
 		String userInput;
-		System.out.print("$ ");
 		for(;;){
 			userInput = stdIn.readLine();
 			if (userInput.equals("quit")){
