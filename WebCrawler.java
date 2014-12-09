@@ -9,21 +9,23 @@ import java.util.ArrayList;
 public class WebCrawler {
 
 	/*
-	Usage: java WebCrawler mode n url [url...]
+	Usage: ava WebCrawler <mode> <n> -url <urls...> -search <terms...>
 	mode = pages or bytes per second (b for bytes, p for pages)
 	n = mode per second (int)
-	url = starting url
-	[url...] = extra starting urls
-	example: java WebCrawler p 5 www.cs.rochester.edu
+	-url = start URLs
+	[url...] = starting urls
+	-search = start search terms
+	[terms...] search terms
+	example: java WebCrawler pages 5 -url www.cs.rochester.edu -search words stuff things
 	 */
 	public static void main(String[] args) {
-		if (args.length < 3){
-			System.out.println("Not enough command line arguments. Usage: java WebCrawler mode n url [url...]");
+		if (args.length < 6){
+			System.out.println("Not enough command line arguments. Usage: java WebCrawler <mode> <n> -url <urls...> -search <terms...>");
 			System.exit(1);
 		}
 		String mode = args[0];
-		if (!mode.equals("p") && !mode.equals("b")){
-			System.out.println("Error: First Argument must be 'p' or 'b' or pages/bytes per second");
+		if (!mode.equals("pages") && !mode.equals("bytes")){
+			System.out.println("Error: First Argument must be 'pages' or 'bytes' for pages/bytes per second");
 			System.exit(1);
 		}
 		int n = -1;
@@ -39,20 +41,34 @@ public class WebCrawler {
 		}
 
 		LinkedList<String> q = new LinkedList<String>();
-		for (int i = 2; i < args.length; i++){
+		if (!args[2].equals("-url")){
+			System.out.println("Error: no URLs entered. Must preface URLs with '-url' flag\nUsage: java WebCrawler <mode> <n> -url <urls...> -search <terms...>");
+			System.exit(1);
+		}
+		int i = 3;
+		while (i < args.length && !args[i].equals("-search")){
 			if (args[i].matches("(http://|https://)?(www.)?(\\w+\\.)+(\\w+)"))
 				q.add(args[i]);
 			else{
 				System.out.println("Error: Not a valid URL");
 				System.exit(1);
 			}
+			i++;
+		}
+		if (i == args.length){
+			System.out.println("Error: No search terms. Must preface terms with '-search' flag\nUsage: java WebCrawler <mode> <n> -url <urls...> -search <terms...>");
+			System.exit(1);
+		}
+		ArrayList<String> searchTerms = new ArrayList<String>();
+		i++;
+		while (i < args.length){
+			searchTerms.add(args[i]);
+			i++;
 		}
 
-		ArrayList<String> set = new ArrayList<String>();
 
 		while (!q.isEmpty()){
 			String v = q.pop();
-			System.out.println(v);
 
 			// Get Website
 
@@ -70,6 +86,7 @@ public class WebCrawler {
 				// }
 			// }
 		}
+
 	}
 
 }
